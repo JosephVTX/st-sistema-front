@@ -1,6 +1,5 @@
 "use client";
 
-import Button from "@/components/ui/button";
 import Search from "./components/search";
 import { useFetch } from "@/hooks/use-fetch";
 import Select from "./components/select";

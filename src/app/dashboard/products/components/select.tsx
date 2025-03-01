@@ -16,7 +16,7 @@ export default function Select() {
 
   return (
     <select 
-      className="capitalize outline-none border-none min-w-52"
+      className="capitalize outline-none border-none min-w-40"
       defaultValue={currentCategory}
       onChange={handleChange}
     >
