@@ -94,16 +94,25 @@ export default function ImageUpload({
 
   const handleLinkSubmit = async () => {
     if (linkInput) {
-      setImageUrl(linkInput);
-      
       try {
-        // Descargar la imagen desde la URL
-        const response = await fetch(linkInput);
+        // Usar nuestro endpoint para evitar problemas de CORS
+        const proxyUrl = `/api/image?url=${encodeURIComponent(linkInput)}`;
+        
+        // Mostrar la vista previa usando la URL del proxy
+        setImageUrl(proxyUrl);
+        
+        // Obtener la imagen a través del proxy
+        const response = await fetch(proxyUrl);
+        if (!response.ok) {
+          throw new Error(`Error al obtener la imagen: ${response.statusText}`);
+        }
+        
+        // Convertir la respuesta a blob
         const blob = await response.blob();
         
         // Crear un archivo temporal
-        const tempFile = new File([blob], "image-from-url.jpg", {
-          type: blob.type,
+        const tempFile = new File([blob], "image-from-url.webp", {
+          type: 'image/webp',
         });
         
         // Comprimir y convertir a WebP
@@ -111,19 +120,11 @@ export default function ImageUpload({
         onChange(optimizedFile);
       } catch (error) {
         console.error("Error al procesar la imagen desde URL:", error);
-        setImageUrl(linkInput);
-        // No debemos pasar null, intentamos usar la imagen original como fallback
-        try {
-          const response = await fetch(linkInput);
-          const blob = await response.blob();
-          const fallbackFile = new File([blob], "image-from-url-fallback.jpg", {
-            type: blob.type,
-          });
-          onChange(fallbackFile);
-        } catch (secondError) {
-          console.error("Error en fallback de imagen:", secondError);
-          onChange(null);
-        }
+        
+        // Mostrar mensaje de error
+        alert("No se pudo cargar la imagen. Verifica la URL e intenta nuevamente.");
+        setImageUrl("");
+        onChange(null);
       }
       
       setIsLinkMode(false);
