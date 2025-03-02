@@ -112,7 +112,18 @@ export default function ImageUpload({
       } catch (error) {
         console.error("Error al procesar la imagen desde URL:", error);
         setImageUrl(linkInput);
-        onChange(null);
+        // No debemos pasar null, intentamos usar la imagen original como fallback
+        try {
+          const response = await fetch(linkInput);
+          const blob = await response.blob();
+          const fallbackFile = new File([blob], "image-from-url-fallback.jpg", {
+            type: blob.type,
+          });
+          onChange(fallbackFile);
+        } catch (secondError) {
+          console.error("Error en fallback de imagen:", secondError);
+          onChange(null);
+        }
       }
       
       setIsLinkMode(false);

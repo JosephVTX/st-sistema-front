@@ -95,7 +95,7 @@ export default function EditProductPage() {
         },
       });
 
-      router.push("/dashboard/products");
+      router.back();
     } catch (error) {
       console.error("Error al actualizar el producto:", error);
       alert("Ocurrió un error al actualizar el producto");

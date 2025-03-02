@@ -10,16 +10,7 @@ const nextConfig: NextConfig = {
   },
   images: {
     domains: ['*'], // Esto no funcionará, ver abajo
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: '**',
-      },
-      {
-        protocol: 'http',
-        hostname: '**',
-      },
-    ],
+    
   },
 };
 
