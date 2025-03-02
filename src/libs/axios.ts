@@ -16,11 +16,11 @@ const getCookie = async (key: string) => {
 };
 
 const axios = Axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api",
   timeout: 5000,
   headers: {
     Accept: "application/json",
-    "Content-Type": "application/json",
+    
   },
 });
 // Interceptor simplificado que funciona de manera diferente en cliente y servidor

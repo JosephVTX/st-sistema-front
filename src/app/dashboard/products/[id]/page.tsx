@@ -16,24 +16,27 @@ export default function EditProductPage() {
     description: "",
     category: "",
     price: "",
-    code: "",
-    image: "",
+    stock: "",
+    image: null as File | null,
   });
+  const [initialImageUrl, setInitialImageUrl] = useState("");
 
   useEffect(() => {
     const fetchProduct = async () => {
       try {
         const response = await axios.get(`/products/${id}`);
         const product = response.data;
-        
+
         setFormData({
           name: product.name || "",
           description: product.description || "",
           category: product.category.id || "",
           price: product.price?.toString() || "",
-          code: product.code || "",
-          image: product.image || "",
+          stock: product.stock?.toString() || "",
+          image: null,
         });
+
+        setInitialImageUrl(product.image || "");
       } catch (error) {
         console.error("Error fetching product:", error);
         alert("Error al cargar los datos del producto");
@@ -56,8 +59,8 @@ export default function EditProductPage() {
     setFormData((prev) => ({ ...prev, category: value }));
   };
 
-  const handleImageChange = (imageUrl: string) => {
-    setFormData((prev) => ({ ...prev, image: imageUrl }));
+  const handleImageChange = (file: File | null) => {
+    setFormData({ ...formData, image: file });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -70,7 +73,28 @@ export default function EditProductPage() {
 
     try {
       setIsLoading(true);
-      await axios.put(`/products/${id}`, formData);
+
+      // Create a FormData object to properly handle file uploads
+      const submitData = new FormData();
+      submitData.append("_method", "PATCH");
+      submitData.append("name", formData.name);
+      submitData.append("description", formData.description);
+      submitData.append("category_id", formData.category);
+      submitData.append("price", formData.price);
+      submitData.append("stock", formData.stock);
+
+      // Only append the image if it exists
+      if (formData.image) {
+        submitData.append("image", formData.image);
+      }
+
+      // Send the FormData object instead of the regular formData
+      await axios.post(`/products/${id}`, submitData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
       router.push("/dashboard/products");
     } catch (error) {
       console.error("Error al actualizar el producto:", error);
@@ -81,7 +105,9 @@ export default function EditProductPage() {
   };
 
   if (isLoading) {
-    return <div className="text-center py-10">Cargando datos del producto...</div>;
+    return (
+      <div className="text-center py-10">Cargando datos del producto...</div>
+    );
   }
 
   return (
@@ -91,7 +117,10 @@ export default function EditProductPage() {
       <form onSubmit={handleSubmit}>
         <div className="mb-6">
           <h2 className="text-xl font-bold mb-4">Imagen del producto</h2>
-          <ImageUpload onChange={handleImageChange} initialImage={formData.image} />
+          <ImageUpload
+            onChange={handleImageChange}
+            initialImage={initialImageUrl}
+          />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -112,7 +141,10 @@ export default function EditProductPage() {
             <label className="block mb-2 font-medium">
               Categoría <span className="text-red-500">*</span>
             </label>
-            <Categories onChange={handleCategoryChange} defaultValue={formData.category} />
+            <Categories
+              onChange={handleCategoryChange}
+              defaultValue={formData.category}
+            />
           </div>
         </div>
 
@@ -149,13 +181,18 @@ export default function EditProductPage() {
             </div>
           </div>
           <div>
-            <label className="block mb-2 font-medium">Código</label>
+            <label className="block mb-2 font-medium">
+              Stock <span className="text-red-500">*</span>
+            </label>
             <input
-              type="text"
-              name="code"
-              value={formData.code}
+              type="number"
+              name="stock"
+              value={formData.stock}
               onChange={handleChange}
               className="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition"
+              min="0"
+              step="1"
+              required
             />
           </div>
         </div>
@@ -180,4 +217,3 @@ export default function EditProductPage() {
     </div>
   );
 }
-

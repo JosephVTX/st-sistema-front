@@ -16,7 +16,7 @@ export default function Dialog({ children }: { children: React.ReactNode }) {
           className="absolute top-2 right-2 p-1 rounded-full hover:bg-gray-100"
         >
           <X size={24} />
-        </button> 
+        </button>
         {children}
       </div>
     </dialog>

@@ -12,10 +12,10 @@ export default function CreateProductPage() {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    category: "",
+    category_id: "",
     price: "",
-    code: "",
-    image: "",
+    stock: "",
+    image: null as File | null,
   });
 
   const handleChange = (
@@ -26,26 +26,47 @@ export default function CreateProductPage() {
   };
 
   const handleCategoryChange = (value: string) => {
-    setFormData((prev) => ({ ...prev, category: value }));
+    setFormData((prev) => ({ ...prev, category_id: value }));
   };
 
-  const handleImageChange = (imageUrl: string) => {
-    setFormData((prev) => ({ ...prev, image: imageUrl }));
+  const handleImageChange = (file: File | null) => {
+    console.log(file);
+    
+    setFormData({ ...formData, image: file });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.name || !formData.price || !formData.category) {
+    if (!formData.name || !formData.price || !formData.category_id) {
       alert("Por favor completa los campos requeridos");
       return;
     }
 
     try {
       setIsLoading(true);
-      // Aquí iría la lógica para enviar los datos al servidor
-      await axios.post("/products", formData);
-      router.push("/dashboard/products");
+      
+      // Create a FormData object to properly handle file uploads
+      const submitData = new FormData();
+      submitData.append('name', formData.name);
+      submitData.append('description', formData.description);
+      submitData.append('category_id', formData.category_id);
+      submitData.append('price', formData.price);
+      submitData.append('stock', formData.stock);
+      
+      // Only append the image if it exists
+      if (formData.image) {
+        submitData.append('image', formData.image);
+      }
+      
+      // Send the FormData object instead of the regular formData
+      await axios.post("/products", submitData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      
+      router.back();
     } catch (error) {
       console.error("Error al crear el producto:", error);
       alert("Ocurrió un error al crear el producto");
@@ -119,13 +140,15 @@ export default function CreateProductPage() {
             </div>
           </div>
           <div>
-            <label className="block mb-2 font-medium">Código</label>
+            <label className="block mb-2 font-medium">Stock</label>
             <input
-              type="text"
-              name="code"
-              value={formData.code}
+              type="number"
+              name="stock"
+              value={formData.stock}
               onChange={handleChange}
               className="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition"
+              min="0"
+              step="1"
             />
           </div>
         </div>
